@@ -1,0 +1,65 @@
+services:
+    mariadb:
+        container_name: mariadb
+        image: mariadb:fbiondo
+        build: ./requirements/mariadb/.
+        ports:
+            - "3306:3306"
+        expose:
+            - 3306
+        volumes:
+            - mariadb_data:/var/lib/mysql
+        networks:
+            - inception_network
+        env_file:
+            - .env
+        restart: always
+
+    nginx:
+        container_name: nginx
+        image: nginx:fbiondo
+        build: ./requirements/nginx/.
+        ports:
+            - "443:443"
+        volumes:
+            - wordpress_data:/var/www/html
+        networks:
+            - inception_network
+        depends_on:
+            - wordpress
+        restart: always
+
+    wordpress:
+        container_name: wordpress
+        build: ./requirements/wordpress/.
+        expose:
+            - 9000
+        volumes:
+            - wordpress_data:/var/www/html
+        networks:
+            - inception_network
+        env_file:
+            - .env
+        depends_on:
+            - mariadb
+        restart: always
+
+volumes:
+    mariadb_data:
+        name: mariadb_data
+        driver: local
+        driver_opts:
+            device: /home/gdungdiung/data/mariadb_data
+            o: bind
+            type: none
+    wordpress_data:
+        name: wordpress_data
+        driver: local
+        driver_opts:
+            device: /home/gdungdiung/data/wordpress_data
+            o: bind
+            type: none
+
+networks:
+  inception_network:
+    name: inception_network
